@@ -1,48 +1,26 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
-from database import Base
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, relationship
+
+Base = declarative_base()
 
 class Artist(Base):
-    __tablename__ = "artists"
-
-    id = Column(Integer, primary_key=True, index=True, unique=True)
-    name = Column(String, index=True, unique=True)
-
-    # Définissez la relation avec les albums
+    __tablename__ = 'artists'
+    ArtistId = Column(Integer, primary_key=True)
+    Name = Column(String(100))
     albums = relationship("Album", back_populates="artist")
 
 class Album(Base):
-    __tablename__ = "albums"
-
-    id = Column(Integer, primary_key=True, index=True, unique=True)
-    title = Column(String, index=True)
-    artist_id = Column(Integer, ForeignKey("artists.id"))
-
-    # Définissez la relation avec les pistes
-    tracks = relationship("Track", back_populates="album")
+    __tablename__ = 'albums'
+    AlbumId = Column(Integer, primary_key=True)
+    Title = Column(String(160))
+    ArtistId = Column(Integer, ForeignKey('artists.ArtistId'))
     artist = relationship("Artist", back_populates="albums")
+    tracks = relationship("Track", back_populates="album")
 
 class Track(Base):
-    __tablename__ = "tracks"
-
-    id = Column(Integer, primary_key=True, index=True, unique=True)
-    title = Column(String, index=True)
-    album_id = Column(Integer, ForeignKey("albums.id"))
-
+    __tablename__ = 'tracks'
+    TrackId = Column(Integer, primary_key=True)
+    Name = Column(String(200))
+    AlbumId = Column(Integer, ForeignKey('albums.AlbumId'))
     album = relationship("Album", back_populates="tracks")
-
-# Modèle Pydantic pour la création d'artiste
-from pydantic import BaseModel
-
-class ArtistCreate(BaseModel):
-    name: str
-
-# Modèle Pydantic pour la création d'album
-class AlbumCreate(BaseModel):
-    title: str
-    artist_id: int
-
-# Modèle Pydantic pour la création de piste
-class TrackCreate(BaseModel):
-    title: str
-    album_id: int
